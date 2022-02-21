@@ -1,0 +1,256 @@
+#include <Arduino.h>
+
+#include <multiball/wifi.h>
+
+// #include <U8g2lib.h>
+#include <Adafruit_SSD1327.h>
+
+#include "furball.h"
+#include "display.h"
+#include "aqi.h"
+
+#include "config.h"
+
+
+// U8G2_SSD1309_128X64_NONAME2_F_HW_I2C display(U8G2_R0);
+// static U8G2_SSD1306_128X64_NONAME_F_HW_I2C display(U8G2_R0);
+//static U8G2_SSD1327_EA_W128128_1_HW_I2C display(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+#define OLED_RESET -1
+
+Adafruit_SSD1327 display(128, 128, &Wire, OLED_RESET, 1000000);
+
+static boolean is_present = false;
+
+static display_screen_t screen_types[] = DISPLAY_SCREENS;
+
+static void display_screen_ip_address();
+
+boolean display_begin() {
+  is_present = display.begin(0x3C);
+  if(!is_present)
+    return false;
+
+  display.clearDisplay();
+  display.display();
+
+  // draw a SSD1327_WHITE circle, 10 pixel radius
+  display.fillCircle(display.width()/2, display.height()/2, 10, SSD1327_WHITE);
+  display.display();
+  delay(1000);
+  display.clearDisplay();
+
+  for (uint8_t rot=0; rot < 4; rot++) {
+    display.setRotation(rot);
+    display.clearDisplay();
+    // text display tests
+    display.setTextSize(1);
+    display.setTextColor(SSD1327_WHITE);
+    display.setCursor(0,0);
+    display.println("Hello, world!");
+    display.setTextColor(SSD1327_BLACK, SSD1327_WHITE); // 'inverted' text
+    display.println(3.141592);
+    display.setTextSize(2);
+    display.setTextColor(SSD1327_WHITE);
+    display.print("0x"); display.println(0xDEADBEEF, HEX);
+    display.display();
+    delay(1000);
+  }
+
+
+  delay(10000);
+
+  return true;
+}
+
+/*
+ * code for different screen types
+ * invoked from display_handle() at the end of the file
+ * display_handle() needs to be called from the loop
+ * in this case, furball_loop() will call it to keep the code in main more generic
+ */
+static void display_screen_message() {
+  display.println(DISPLAY_SCREEN_MESSAGE_TEXT);
+}
+
+static void display_screen_time() {
+  #define TIME_BUFFER_LENGTH 9
+  char time_buffer[TIME_BUFFER_LENGTH];
+  struct tm timeinfo;
+
+  if(!getLocalTime(&timeinfo)) {
+    display.println("time fail");
+    return;
+  }
+
+  snprintf(time_buffer, TIME_BUFFER_LENGTH, "%02d:%02d:%02d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+  display.println(time_buffer);
+}
+
+static void display_screen_temperature() {
+  display.setCursor(10, 20);
+  display.print(bme680.temperature());
+  display.println(" degrees C");
+}
+
+static void display_screen_temperature_f() {
+  display.setCursor(10, 20);
+  display.print((int)(bme680.temperature()*9.0/5 + 32));
+  display.println(" degrees F");
+}
+
+static void display_screen_humidity() {
+  display.setCursor(10, 20);
+  display.print(bme680.humidity());
+  display.println(" % humidity");
+}
+
+static void display_screen_pressure() {
+  display.setCursor(10, 20);
+  display.print(bme680.pressure());
+  display.println(" pressure");
+}
+
+static void display_screen_voc() {
+  display.setCursor(10, 20);
+  display.print(bme680.gas_resistance());
+  display.println(" voc");
+}
+
+static void display_screen_pm1() {
+  display.setCursor(10, 20);
+  display.print(pmsa003.density_1_0());
+  display.println(" PM1");
+}
+
+static void display_screen_pm2_5() {
+  display.setCursor(10, 20);
+  display.print(pmsa003.density_2_5());
+  display.println(" PM2.5");
+}
+
+static void display_screen_pm10() {
+  display.setCursor(10, 20);
+  display.print(pmsa003.density_10_0());
+  display.println(" PM10");
+}
+
+static void display_screen_co2() {
+  display.setCursor(10, 20);
+  display.print(scd4x.co2());
+  display.println(" co2");
+}
+
+static void display_screen_ip_address() {
+  IPAddress local = WiFi.localIP();
+#define IP_ADDRESS_STR_LENGTH 3*4+3+1
+  char ip_address_str[IP_ADDRESS_STR_LENGTH];
+
+  snprintf(ip_address_str, IP_ADDRESS_STR_LENGTH, "%d.%d.%d.%d", local[0], local[1], local[2], local[3]);
+  //  display.drawStr(10, 20, ip_address_str);
+  display.println(ip_address_str);
+}
+
+static void display_screen_all_air() {
+  char buf[12];
+
+  snprintf(buf, 12, "C  %d", (int)bme680.temperature());
+  display.print(buf);
+  snprintf(buf, 12, " mg %d", (int)bme680.pressure());
+  display.print(buf);
+  snprintf(buf, 12, "%%  %d", (int)bme680.humidity());
+  display.println(buf);
+}
+
+static void display_screen_all_air_f() {
+  char buf[12];
+
+  snprintf(buf, 12, "F  %d", (int)(bme680.temperature()*9.0/5 + 32));
+  display.print(buf);
+  snprintf(buf, 12, " mg %d", (int)bme680.pressure());
+  display.print(buf);
+  snprintf(buf, 12, "%%  %d", (int)bme680.humidity());
+  display.println(buf);
+}
+
+static void display_screen_all_scd4x() {
+  char buf[12];
+
+  snprintf(buf, 12, "co2 %d", scd4x.co2());
+  display.println(buf);
+  snprintf(buf, 12, " tmp %d", scd4x.temperature());
+  display.println(buf);
+  snprintf(buf, 12, " hmd %d", scd4x.humidity());
+  display.println(buf);
+}
+
+static void display_screen_all_particle() {
+  char buf[12];
+
+  snprintf(buf, 12, "1   %d", pmsa003.density_1_0());
+  display.print(buf);
+  snprintf(buf, 12, " 2.5 %d", pmsa003.density_2_5());
+  display.print(buf);
+  snprintf(buf, 12, " 10  %d", pmsa003.density_10_0());
+  display.println(buf);
+}
+
+static void display_screen_all_off() {
+  //  display.setDrawColor(0);
+  //  display.drawBox(0, 0, 127, 63);
+}
+
+static void display_screen_all_on() {
+  //  display.setDrawColor(1);
+  //  display.drawBox(0, 0, 127, 63);
+}
+
+static void display_screen_aqi() {
+  unsigned aqi_value = aqi(pmsa003.density_2_5(), pmsa003.density_10_0());
+
+  display.setCursor(0, 20);
+  display.print(aqi_value);
+  display.print("AQI ");
+  display.println(aqi_condition_name(aqi_value));
+}
+
+
+// these MUST be in the same sequence as the enum screen_type_t
+// you must not skip any
+static void (*screen_handlers[])() = {
+  display_screen_message,
+  display_screen_time,
+  display_screen_temperature,
+  display_screen_temperature_f,
+  display_screen_humidity,
+  display_screen_pressure,
+  display_screen_voc,
+  display_screen_pm1,
+  display_screen_pm2_5,
+  display_screen_pm10,
+  display_screen_co2,
+  display_screen_ip_address,
+  display_screen_all_air,
+  display_screen_all_air_f,
+  display_screen_all_scd4x,
+  display_screen_all_particle,
+  display_screen_all_off,
+  display_screen_all_on,
+  display_screen_aqi,
+};
+
+void display_loop() {
+  static int current_screen_index = -1;
+  static unsigned long next_screen_change = 0;
+
+  if(millis() > next_screen_change) {
+    next_screen_change = millis() + DISPLAY_SCREEN_INTERVAL;
+    if(++current_screen_index == sizeof(screen_types)/sizeof(display_screen_t))
+      current_screen_index = 0;
+  }
+
+  display.clearDisplay();
+
+  (*screen_handlers[screen_types[current_screen_index]])();
+  display.display();
+}
