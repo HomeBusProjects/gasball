@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "config.h"
 
 #define rbg_width 128

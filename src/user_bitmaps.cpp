@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "config.h"
 
 #define user_bitmap1_width 128

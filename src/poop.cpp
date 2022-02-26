@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #define poop_width 128
 #define poop_height 64
 uint8_t poop_bits[] = {
