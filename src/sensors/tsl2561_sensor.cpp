@@ -24,42 +24,41 @@ void displaySensorDetails(void)
 }
 #endif
 
-
 void TSL2561_Sensor::begin() {
-  if (!_tsl2561.begin()) {
-    _status = SENSOR_NOT_FOUND;
-    Serial.println("TSL2561 not found");
-    return;
-  }
+    if(!_tsl2561.begin()) {
+        _status = SENSOR_NOT_FOUND;
+        Serial.println("TSL2561 not found");
+        return;
+    }
 
-  _present = true;
-  
-  _status = SENSOR_OKAY;
+    _present = true;
 
-  _tsl2561.enableAutoRange(true);
+    _status = SENSOR_OKAY;
 
-  //  _tsl2561.setGain(TSL2561_GAIN_MED);      // 25x gain
-  // _tsl2561.setGain(TSL2561_GAIN_HIGH);   // 428x gain
-  
-  _tsl2561.setIntegrationTime(TSL2561_INTEGRATIONTIME_13MS);
+    _tsl2561.enableAutoRange(true);
+
+    //  _tsl2561.setGain(TSL2561_GAIN_MED);      // 25x gain
+    // _tsl2561.setGain(TSL2561_GAIN_HIGH);   // 428x gain
+
+    _tsl2561.setIntegrationTime(TSL2561_INTEGRATIONTIME_13MS);
 }
 
 void TSL2561_Sensor::handle() {
-  sensors_event_t event;
+    sensors_event_t event;
 
-  _tsl2561.getEvent(&event);
+    _tsl2561.getEvent(&event);
 
-  if(event.light) {
-    _lux = event.light;
+    if(event.light) {
+        _lux = event.light;
 
-    uint16_t full, ir;
-    _tsl2561.getLuminosity(&full, &ir);
+        uint16_t full, ir;
+        _tsl2561.getLuminosity(&full, &ir);
 
-    _full = full;
-    _ir = ir;
-    _visible = full - ir;
+        _full = full;
+        _ir = ir;
+        _visible = full - ir;
 
-    _overloaded = false;
-  } else
-    _overloaded = true;
+        _overloaded = false;
+    } else
+        _overloaded = true;
 }
