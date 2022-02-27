@@ -2,7 +2,7 @@
 
 #include "sensor.h"
 
-#include <Sparkfun_SCD4x_Arduino_Library.h>
+#include <SparkFun_SCD4x_Arduino_Library.h>
 
 class SCD4x_Sensor : public Sensor {
   public:

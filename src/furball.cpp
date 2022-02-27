@@ -123,7 +123,7 @@ void furball_setup() {
     String gas_type;
 
     dfrobot_h2s.begin();
-    //  dfrobot_h2s.changeAcquireMode(dfrobot_h2s.PASSIVITY);
+    dfrobot_h2s.changeAcquireMode(dfrobot_h2s.PASSIVITY);
     dfrobot_h2s.setTempCompensation(dfrobot_h2s.ON);
     gas_type = dfrobot_h2s.queryGasType();
     if(gas_type == "H2S")
@@ -132,7 +132,7 @@ void furball_setup() {
         Serial.printf("Expected H2S sensor, got %s\n", gas_type.c_str());
 
     dfrobot_nh3.begin();
-    //  dfrobot_nh3.changeAcquireMode(dfrobot_nh3.PASSIVITY);
+    dfrobot_nh3.changeAcquireMode(dfrobot_nh3.PASSIVITY);
     dfrobot_nh3.setTempCompensation(dfrobot_nh3.ON);
     gas_type = dfrobot_nh3.queryGasType();
     if(gas_type == "NH3")
@@ -141,7 +141,7 @@ void furball_setup() {
         Serial.printf("Expected NH3 sensor, got %s\n", gas_type.c_str());
 
     dfrobot_o3.begin();
-    //  dfrobot_o3.changeAcquireMode(dfrobot_o3.PASSIVITY);
+    dfrobot_o3.changeAcquireMode(dfrobot_o3.PASSIVITY);
     dfrobot_o3.setTempCompensation(dfrobot_o3.ON);
     gas_type = dfrobot_o3.queryGasType();
     if(gas_type == "O3")
@@ -150,7 +150,7 @@ void furball_setup() {
         Serial.printf("Expected O3 sensor, got %s\n", gas_type.c_str());
 
     dfrobot_co.begin();
-    //  dfrobot_co.changeAcquireMode(dfrobot_co.PASSIVITY);
+    dfrobot_co.changeAcquireMode(dfrobot_co.PASSIVITY);
     dfrobot_co.setTempCompensation(dfrobot_co.ON);
     gas_type = dfrobot_co.queryGasType();
     if(gas_type == "CO")
@@ -159,7 +159,7 @@ void furball_setup() {
         Serial.printf("Expected CO sensor, got %s\n", gas_type.c_str());
 
     dfrobot_no2.begin();
-    //  dfrobot_no2.changeAcquireMode(dfrobot_no2.PASSIVITY);
+    dfrobot_no2.changeAcquireMode(dfrobot_no2.PASSIVITY);
     dfrobot_no2.setTempCompensation(dfrobot_no2.ON);
     gas_type = dfrobot_no2.queryGasType();
     if(gas_type == "NO2")
@@ -350,8 +350,8 @@ static bool furball_no2_update(char *buf, size_t buf_len) {
 
     snprintf(buf, buf_len,
              "{  \"no2\": %0.4f, \"--temperature\": %0.1f, \"--source\": "
-             "\"DFRobot NO2\" }",
-             dfrobot_no2.readGasConcentrationPPM(), temp);
+             "\"DFRobot NO2\", \"voltage\": %f }",
+             dfrobot_no2.readGasConcentrationPPM(), temp, dfrobot_no2.getSensorVoltage());
 
     Serial.println(dfrobot_no2.readGasConcentrationPPM());
 
@@ -370,12 +370,8 @@ static bool furball_o3_update(char *buf, size_t buf_len) {
 
     snprintf(buf, buf_len,
              "{  \"o3\": %0.4f, \"--temperature\": %0.1f, \"--source\": "
-             "\"DFRobot O3\" }",
-             dfrobot_o3.readGasConcentrationPPM(), temp);
-
-    Serial.println(dfrobot_o3.readGasConcentrationPPM());
-    Serial.print("  sensor voltage ");
-    Serial.println(dfrobot_o3.getSensorVoltage());
+             "\"DFRobot O3\", \"voltage\": %f }",
+             dfrobot_o3.readGasConcentrationPPM(), temp, dfrobot_o3.getSensorVoltage());
 
 #ifdef VERBOSE
     Serial.println(buf);
@@ -392,12 +388,8 @@ static bool furball_co_update(char *buf, size_t buf_len) {
 
     snprintf(buf, buf_len,
              "{  \"co\": %0.4f, \"--temperature\": %0.1f, \"--source\": "
-             "\"DFRobot CO\" }",
-             dfrobot_co.readGasConcentrationPPM(), temp);
-
-    Serial.println(dfrobot_co.readGasConcentrationPPM());
-    Serial.print("  sensor voltage ");
-    Serial.println(dfrobot_co.getSensorVoltage());
+             "\"DFRobot CO\", \"voltage\": %f }",
+             dfrobot_co.readGasConcentrationPPM(), temp, dfrobot_co.getSensorVoltage());
 
 #ifdef VERBOSE
     Serial.println(buf);
@@ -414,12 +406,8 @@ static bool furball_h2s_update(char *buf, size_t buf_len) {
 
     snprintf(buf, buf_len,
              "{  \"h2s\": %0.4f, \"--temperature\": %0.1f, \"--source\": "
-             "\"DFRobot H2S\" }",
-             dfrobot_h2s.readGasConcentrationPPM(), temp);
-
-    Serial.println(dfrobot_h2s.readGasConcentrationPPM());
-    Serial.print("  sensor voltage ");
-    Serial.println(dfrobot_h2s.getSensorVoltage());
+             "\"DFRobot H2S\", \"voltage\": %f }",
+             dfrobot_h2s.readGasConcentrationPPM(), temp, dfrobot_h2s.getSensorVoltage());
 
 #ifdef VERBOSE
     Serial.println(buf);
@@ -436,12 +424,8 @@ static bool furball_nh3_update(char *buf, size_t buf_len) {
 
     snprintf(buf, buf_len,
              "{  \"nh3\": %0.4f, \"--temperature\": %0.1f, \"--source\": "
-             "\"DFRobot NH3\" }",
-             dfrobot_nh3.readGasConcentrationPPM(), temp);
-
-    Serial.println(dfrobot_nh3.readGasConcentrationPPM());
-    Serial.print("  sensor voltage ");
-    Serial.println(dfrobot_nh3.getSensorVoltage());
+             "\"DFRobot NH3\", \"voltage\": %f }",
+             dfrobot_nh3.readGasConcentrationPPM(), temp, dfrobot_nh3.getSensorVoltage());
 
 #ifdef VERBOSE
     Serial.println(buf);
