@@ -1,6 +1,6 @@
 # Gasball
 
-[![PlatformIO CI](actions/workflows/main.yml/badge.svg)](actions/workflows/main.yml)
+[![PlatformIO CI](https://github.com/HomeBusProjects/gasball/actions/workflows/main.yml/badge.svg)](https://github.com/HomeBusProjects/gasball/actions/workflows/main.yml)
 
 Gasball is an open-source hardware project intended to help with the research and development of [Homebus](https://github.com/HomeBusProjects), an IoT auto-provisioning framework and data processing network built on top of MQTT. Note that Homebus is not even alpha quality software at this time and is still undergoing architectural changes and development.
 
